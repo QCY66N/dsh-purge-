@@ -52,7 +52,7 @@ function setup() {
     JSON.stringify({
       name: PACKAGE,
       version: "1.2.0",
-      repository: { url: "https://github.com/kingcharleslzy-ai/dsh-purge.git" },
+      repository: { url: "https://github.com/QCY66N/dsh-purge-.git" },
     }),
   );
   const candidate = path.join(home, "candidate.tgz");
@@ -328,8 +328,8 @@ test("release checksum failure stops before installation", async () => {
       installRelease(f.manager, {
         ref: "v1.2.0",
         version: "1.2.0",
-        asset: "https://github.com/kingcharleslzy-ai/dsh-purge/releases/download/v1.2.0/dsh-purge-community-1.2.0.tgz",
-        sums: "https://github.com/kingcharleslzy-ai/dsh-purge/releases/download/v1.2.0/SHA256SUMS.txt",
+        asset: "https://github.com/QCY66N/dsh-purge-/releases/download/v1.2.0/dsh-purge-community-1.2.0.tgz",
+        sums: "https://github.com/QCY66N/dsh-purge-/releases/download/v1.2.0/SHA256SUMS.txt",
       }, globalThis.fetch),
       /SHA256/,
     );
@@ -626,6 +626,8 @@ test("failed migration restores exact disabled profile and floating dependency",
   t.after(fixture.close);
   const manifest = path.join(fixture.profile, "package.json");
   const previous = JSON.parse(fs.readFileSync(manifest));
+// 上游官方通道装的旧状态：换源到本 fork 后仍必须被认成"来自 latest 通道"，
+// 否则 keepDisabled 迁移会被跳过。故意保留上游 URL，覆盖双来源分支。
   previous.dependencies[PACKAGE] = "https://github.com/kingcharleslzy-ai/dsh-purge/releases/latest/download/dsh-purge-community.tgz";
   previous.dsh.profile.bundles = ["unrelated-plugin"];
   const original = JSON.stringify(previous, null, 2);

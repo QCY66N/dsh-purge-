@@ -6,12 +6,12 @@
 
 给 DeepSeek Harness 的自托管控件（俗称「破甲」插件）· 86 条宿主补丁 · 25 层状态自检 · 左侧栏整页设置
 
-[![Release](https://img.shields.io/github/v/release/kingcharleslzy-ai/dsh-purge?label=release)](https://github.com/kingcharleslzy-ai/dsh-purge/releases)
-[![Checks](https://github.com/kingcharleslzy-ai/dsh-purge/actions/workflows/community.yml/badge.svg)](https://github.com/kingcharleslzy-ai/dsh-purge/actions/workflows/community.yml)
+[![Release](https://img.shields.io/github/v/release/QCY66N/dsh-purge-?label=release)](https://github.com/QCY66N/dsh-purge-/releases)
+[![Checks](https://github.com/QCY66N/dsh-purge-/actions/workflows/community.yml/badge.svg)](https://github.com/QCY66N/dsh-purge-/actions/workflows/community.yml)
 
-当前版本 **1.7.20** · 适配 **DSH Desktop 0.2.2-rc.3**（0.2.2-rc.1 / 0.2.1-rc.1 / rc.2 / rc.3 / rc.5 同样通过） · [English](docs/README.en.md)
+当前版本 **1.7.21** · 适配 **DSH Desktop 0.2.2-rc.5**（0.2.2-rc.3 / rc.2 / rc.1 / 0.2.1-rc.1 / rc.2 / rc.3 / rc.5 同样通过） · [English](docs/README.en.md)
 
-1.7.20 让审计标签说真话：`partial_refused`（先给内容后拒）与 `empty_after_retry`（重试后几乎没内容）不再算成功，并新增默认关闭的 seed 预填臂。[发行说明](https://github.com/kingcharleslzy-ai/dsh-purge/releases/tag/v1.7.20)。
+1.7.21 适配 DSH **0.2.2-rc.5**：rc.3 → rc.5 的 pristine 全树比对里 3783 个文件逐字节相同，真实代码改动只有 4 处，88 条补丁在 rc.5 上 `patchDrift` 零漂移；同时把发布源切到本仓库。[发行说明](https://github.com/QCY66N/dsh-purge-/releases/tag/v1.7.21)。
 
 **原项目与作者**：小杨 / YuJunZhiXue 是历史上游 dsh-purge 的作者署名。本仓库独立维护社区版，保留上游版权和 MIT 许可证。历史署名不代表对当前同名 GitHub 账号身份的核实。详见[署名记录](NOTICE.md)与[许可证](LICENSE)。
 
@@ -71,7 +71,7 @@ dsh-purge Community 是一个跑在你自己机器上的 Harness 附加组件。
 
 **让 AI 安装**，把下面这句话发给能操作本机的 Agent：
 
-> 帮我把 https://github.com/kingcharleslzy-ai/dsh-purge 的最新稳定版装到我正在用的 DSH。先读仓库 AGENTS.md 的安装章节，检查有没有旧版，有就保留设置原地迁移。装好告诉我实际版本和 profile，重启由我自己操作。
+> 帮我把 https://github.com/QCY66N/dsh-purge- 的最新稳定版装到我正在用的 DSH。先读仓库 AGENTS.md 的安装章节，检查有没有旧版，有就保留设置原地迁移。装好告诉我实际版本和 profile，重启由我自己操作。
 
 ### 方式一：DSH 官方界面（首次安装）
 
@@ -82,7 +82,7 @@ dsh-purge Community 是一个跑在你自己机器上的 Harness 附加组件。
    https://kingcharleslzy-ai.github.io/dsh-purge/index.json
    ```
 
-3. 核对仓库为 `kingcharleslzy-ai/dsh-purge`，点「安装」。完成后，到已安装插件列表查看 `dsh-purge-community` 的版本。
+3. 核对仓库为 `QCY66N/dsh-purge-`，点「安装」。完成后，到已安装插件列表查看 `dsh-purge-community` 的版本。
 
 **「安装源」通常保持原值即可。** 这个字段用来下载 `yaml` 等 npm 依赖。若详情里出现 `GET https://github.com/…/yaml` 和 404，请在「插件 → 添加插件 → 安装源」选择「npm 官方源」或你平时可用的私有 npm 源，然后重试。[查看三个地址各填哪里](docs/INSTALLATION.md#install-addresses)
 
@@ -95,7 +95,7 @@ dsh-purge Community 是一个跑在你自己机器上的 Harness 附加组件。
 下面命令适用于**已经安装 `dsh` 命令、且使用 `web` profile 的 CLI/Web 用户**，在 macOS/Linux 终端或 Windows PowerShell 中运行。桌面版用户优先用上面的界面；不要为了安装插件再用 `npx` 下载另一套宿主。
 
 ```sh
-dsh plugin --profile web add "https://github.com/kingcharleslzy-ai/dsh-purge/releases/download/v1.7.20/dsh-purge-community-1.7.20.tgz"
+dsh plugin --profile web add "https://github.com/QCY66N/dsh-purge-/releases/download/v1.7.21/dsh-purge-community-1.7.21.tgz"
 ```
 
 `web` 必须与实际启动的 profile 一致；自定义数据目录需要沿用该实例的 `DSH_HOME`。命令使用本次发行的固定版本 URL；不是 `npm install -g`，也不是安装裸 npm 包名。本项目通过 GitHub 发行，**不要替换成 `add dsh-purge` 或 `add dsh-purge-community`**。官方 CLI 的安装不会额外运行我们安装器的 Release SHA256 比对及迁移快照；需要这些功能时选方式三。[官方 CLI 安装说明](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/user/develop/basic/publish.zh.md)
@@ -110,7 +110,7 @@ dsh plugin --profile web add "https://github.com/kingcharleslzy-ai/dsh-purge/rel
 
 ```sh
 PURGE_INSTALL_DIR="$(mktemp -d)"
-curl -fSL --connect-timeout 20 --max-time 90 "https://raw.githubusercontent.com/kingcharleslzy-ai/dsh-purge/master/scripts/install.sh" -o "$PURGE_INSTALL_DIR/install.sh"
+curl -fSL --connect-timeout 20 --max-time 90 "https://raw.githubusercontent.com/QCY66N/dsh-purge-/master/scripts/install.sh" -o "$PURGE_INSTALL_DIR/install.sh"
 sh "$PURGE_INSTALL_DIR/install.sh" --dry-run
 ```
 
@@ -128,7 +128,7 @@ sh "$PURGE_INSTALL_DIR/install.sh"
 
 ```powershell
 $PurgeInstaller = Join-Path $env:TEMP ('purge-install-' + [guid]::NewGuid().ToString('N') + '.ps1')
-Invoke-WebRequest -UseBasicParsing -TimeoutSec 90 -Uri 'https://raw.githubusercontent.com/kingcharleslzy-ai/dsh-purge/master/scripts/install.ps1' -OutFile $PurgeInstaller
+Invoke-WebRequest -UseBasicParsing -TimeoutSec 90 -Uri 'https://raw.githubusercontent.com/QCY66N/dsh-purge-/master/scripts/install.ps1' -OutFile $PurgeInstaller
 powershell -NoProfile -ExecutionPolicy Bypass -File "$PurgeInstaller" -DryRun
 ```
 
@@ -146,7 +146,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "$PurgeInstaller"
 
 ```sh
 PURGE_INSTALL_DIR="$(mktemp -d)"
-curl -fSL --connect-timeout 20 --max-time 90 "https://raw.githubusercontent.com/kingcharleslzy-ai/dsh-purge/master/scripts/install.sh" -o "$PURGE_INSTALL_DIR/install.sh"
+curl -fSL --connect-timeout 20 --max-time 90 "https://raw.githubusercontent.com/QCY66N/dsh-purge-/master/scripts/install.sh" -o "$PURGE_INSTALL_DIR/install.sh"
 sh "$PURGE_INSTALL_DIR/install.sh" --dry-run
 ```
 
@@ -214,8 +214,9 @@ Web 面板默认接受回环地址和宿主配置的监听地址。通过自有�
 
 | 组件 | 值 |
 | --- | --- |
-| 插件 | `dsh-purge-community` 1.7.20 |
-| 已验证宿主 | DSH Desktop 0.2.2-rc.3 / 0.2.2-rc.2 / 0.2.2-rc.1 / 0.2.1-rc.1 / 0.2.1-rc.2 / 0.2.1-rc.3 / 0.2.1-rc.5 |
+| 插件 | `dsh-purge-community` 1.7.21 |
+| 已验证宿主 | DSH Desktop 0.2.2-rc.5 / 0.2.2-rc.3 / 0.2.2-rc.2 / 0.2.2-rc.1 / 0.2.1-rc.1 / 0.2.1-rc.2 / 0.2.1-rc.3 / 0.2.1-rc.5 |
+| 0.2.2-rc.5 | 与 rc.3 做 pristine 全树比对：3783 文件逐字节相同，65 处差异中 58 处只是版本号；88 条补丁 `patchDrift` 零漂移，`#53` 的 `web-app-lib` 判为已迁移。**桌面壳 6 条（#45/#46/#82/#83/#84/#92）未在 rc.5 安装包上复测。** |
 | 0.2.2-rc.2 | 补丁 74 applied / 零漂移，自检与破甲/回退回归在 macOS 通过；Windows 仅验证预设卡片与启动诊断，未复测补丁。 |
 | 其它宿主 | 允许安装，自检会标「未验证」；先看 `diagnose` |
 | Node | ≥18（桌面版自带运行时即可）；红队工具需 ≥22.5（`node:sqlite`） |

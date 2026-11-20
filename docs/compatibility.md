@@ -9,13 +9,15 @@
 
 | 项 | 值 |
 | --- | --- |
-| 插件版本 | `dsh-purge-community` 1.7.20 |
+| 插件版本 | `dsh-purge-community` 1.7.21 |
 | 声明范围 | `dsh.compatibility.dsh = ">=0.2.1-rc.1 <0.3.0"` |
 | profile | `desktop`、`web` |
 | 逐发行状态字段 | `dsh.compatibility.dshReleases` |
 
 | 宿主发行 | 状态 | 依据 / 备注 |
 | --- | --- | --- |
+| 0.2.2-rc.5 | `compatible` | rc.3 → rc.5 pristine 全树比对 3783 文件逐字节相同、65 处差异中 58 处只是版本号；88 条补丁 `patchDrift` 零漂移。**桌面壳 6 条（#45/#46/#82/#83/#84/#92）未在 rc.5 安装包上复测。** |
+| 0.2.2-rc.4 | `unknown` | manifest 声明为 unknown；无证据 |
 | 0.2.2-rc.3 | `compatible` | 官方 rc.3 隔离副本 86 条补丁 74 applied / 零漂移，二次应用幂等；真实 Host Loader 预设注册通过。**Windows rc.3 未复测补丁。** |
 | 0.2.2-rc.2 | `compatible` | 同上批次验证 |
 | 0.2.2-rc.1 | `compatible` | 仍未完整适配：六项旧补丁 #14/#17/#60/#62/#67/#74 保持原定义未修（见 [§2](#c-boundary)） |
@@ -35,7 +37,8 @@
 - **0.1.5、0.2.0**：低于声明下限 `0.2.1-rc.1`，本仓库没有这两个宿主的适配记录，按**未验证（unknown）**处理。不要凭"更老的宿主应该更简单"推断可用。
 - **0.2.1 系列**：`tool-subagent` 不再接受 `toolFilter`——旧 deny 清单要先转成原生子预设与父工具 `agentPreset` 引用（机制与停止条件见 [troubleshooting §13](troubleshooting.md#t-preset)）。rc.4 未声明；rc.1 / rc.2 / rc.3 / rc.5 已声明 `compatible`。
 - **0.2.2-rc.1**：仍未完整适配。六项旧补丁 #14/#17/#60/#62/#67/#74 保持原定义、尚未修复；原生消息回合契约测试通过，但回调缺少 messages 的异常仍应暴露，不可吞掉错误或丢弃输入。测试范围与未确认事项见 [诊断记录](maintenance-022-diagnostics.md)。
-- **0.2.2-rc.2 / rc.3**：rc.3 是当前首部声明的主验证目标（见 [§1](#c-matrix)）。Windows 上的 rc.3 只做了部分验证——不要写成"Windows 全量通过"。
+- **0.2.2-rc.5**：当前主验证目标。适配依据是源码级比对而非"装上去能跑"：与 rc.3 相比 3783 个文件逐字节相同，真实代码改动仅 4 处（`dsh-base` 的 web search 后端路由、`dsh-llm-deepseek` 翻译、`dsh-tool-web` 搜索、`dsh-repeat-tool-reminder` 新增 `CONTENT_REFUSED` 码），且都不在补丁锚点上。审批 / 沙箱 / 提权 / FS 围栏 / `system-prompt` / `agent-loop` / `tools` 逐字节未变，`#9 #10 #13 #14 #15 #16` 无需重锚。**桌面壳 6 条未复测**（目标是 Electron `resources/app/lib/main.js`，不在 npm 包树内）。
+- **0.2.2-rc.2 / rc.3**：rc.3 是上一版的主验证目标（见 [§1](#c-matrix)）。Windows 上的 rc.3 只做了部分验证——不要写成"Windows 全量通过"。
 - **0.2.2-alpha.2、rc.4**：`unknown`。`unknown` 不是"大概可以"，是"没有证据"。
 - **NEXT 宿主家族**：独立、未验证。包名识别或磁盘写入成功都不构成完整运行兼容证明；#102 的 NEXT 桌面发行版完整兼容仍未确认。
 - 隔离安装测试（含 `scripts/check-architecture-runtime.mjs` 调整测试副本布局的那类）只代表安装路径，不代表模型行为、GUI 功能或宿主补丁全量验收。
@@ -70,7 +73,10 @@
 | --- | --- | --- |
 | #32 | `harness-dev-context` | `legacyParagraph` 匹配常量，改了会漏历史段落 |
 | #36 | `tool-fs` | 措辞已由审批补丁写成 `Approval is auto-granted.` |
+| #53 | `web-app-lib` | 0.2.1 起该文案搬到 `harness-dev-context`；rc.3 与 rc.5 的 `web-app-lib` 逐字节相同且三个锚点全不中 |
 | #62 | `dsh-tools` | rc.3 把判断只留在 `types/index.js` |
+
+- `#88` 声明 `chainedAfter: 87`：它的锚点是 `#87` 打完之后的产物，`#87` 未落地时本来就不存在。`patchDrift` 会把这种情形归入 `chained` 而不计入漂移；`patchStatusDetail` 不认 `chainedAfter`，逐文件状态仍可能显示 `drifted`——**这是预期的级联显示，不是回归**。
 
 - #50 **不是** optional，而是补了等价的"已达成"标记；#76 声明 `silentWhenMissing`，缺失时判 `skipped` 而不报红。
 - 漂移判定：目标文件存在、marker 不在、锚点全不中 → `drifted`（不再软成功）；自标记补丁与 `silentWhenMissing` 补丁仍判 `skipped`；`fileOptional` 的目标漂移不牵连整条补丁。整段机制与排查动作见 [troubleshooting §7](troubleshooting.md#t-drift)。

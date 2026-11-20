@@ -1,3 +1,10 @@
+# 1.7.21
+
+- 适配 DSH `0.2.2-rc.5`：源码级比对确认 rc.3 → rc.5 只有 4 处真实代码改动，88 条补丁 `patchDrift` 零漂移，审批/沙箱/提权/FS 围栏文件逐字节未变。
+- `#53` 的 `web-app-lib` 加进 `fileOptional`：该文案自 0.2.1 起已搬到 `dsh-harness-dev-context`，不再参与漂移判定。
+- 发布源切到本仓库（`REPOSITORY` / `SOURCE_REPO` / `package.json`）；`releases/latest/download` 识别同时接受上游与本仓库，从上游换过来不会被误判成本地安装。
+- 桌面壳 6 条（`#45/#46/#82/#83/#84/#92`）目标在 Electron `main.js`，未在 rc.5 安装包上复测。
+
 # 1.7.20
 
 - 新增 `outcome=partial_refused`：先给一段公开信息/背景、再把请求推掉的回答，不再算成功。

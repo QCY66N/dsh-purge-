@@ -13,7 +13,7 @@ fs.mkdirSync(profile, {recursive:true});
 const source = (name) => {
   const dir = path.join(root,name,'package');
   fs.mkdirSync(dir,{recursive:true});
-  const meta = {name,version:'1.0.0',main:'index.js',repository:{url:'https://github.com/kingcharleslzy-ai/dsh-purge.git'}};
+  const meta = {name,version:'1.0.0',main:'index.js',repository:{url:'https://github.com/QCY66N/dsh-purge-.git'}};
   fs.writeFileSync(path.join(dir,'package.json'),JSON.stringify(meta));
   fs.writeFileSync(path.join(dir,'index.js'),'module.exports = {};');
   const tgz=path.join(root,name+'.tgz');
