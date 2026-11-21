@@ -1,3 +1,9 @@
+# 1.7.22
+
+- 修 rc.5 桌面端「应用」卡死：官方把运行时搬到 `<DSH_HOME>\dsh-runtimes\dsh-primary-runtime`，旧代码只认 `resources\runtime` → `missing_runtime` → 中止并保留原归档（补丁写了但不生效）。现在会回退扫用户目录，并把旧的容器链接备份后改指。
+- 修 `#35` 在已应用宿主上必然误报漂移：`#14` 会把 `approveEscalation` 整段换成 `return mode`，`#35` 的锚点随之消失；改为 `markersAny` 并接受 `#14` 的落地标记。
+- 桌面壳 6 条（`#45/#46/#82/#83/#84/#92`）已在真实 rc.5 安装上复测：`patchDrift` 零漂移。
+
 # 1.7.21
 
 - 适配 DSH `0.2.2-rc.5`：源码级比对确认 rc.3 → rc.5 只有 4 处真实代码改动，88 条补丁 `patchDrift` 零漂移，审批/沙箱/提权/FS 围栏文件逐字节未变。

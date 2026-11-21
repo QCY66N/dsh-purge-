@@ -1,7 +1,7 @@
 # AGENTS.md — 给 AI agent 的 Purge 使用说明书
 
 > 写给**在 DSH 里干活的 agent**，不是营销文档。
-> 当前版本：**1.7.21** · 适配 DSH Desktop **0.2.2-rc.5**（0.2.2-rc.3 / rc.2 / rc.1 / 0.2.1-rc.1 / rc.2 / rc.3 / rc.5 同样通过）
+> 当前版本：**1.7.22** · 适配 DSH Desktop **0.2.2-rc.5**（0.2.2-rc.3 / rc.2 / rc.1 / 0.2.1-rc.1 / rc.2 / rc.3 / rc.5 同样通过）
 > 版本号由 `npm run check:docs` 与 `package.json` 校验，发版必须同步；历史版本与 PR 记录在 [maintenance-archive](docs/maintenance-archive.md)，不要再写回本文件。
 
 ---
@@ -102,7 +102,7 @@ purge-community probe new
 
 | 组件 | 值 |
 | --- | --- |
-| 插件 | `dsh-purge-community` 1.7.21 |
+| 插件 | `dsh-purge-community` 1.7.22 |
 | 已验证宿主 | DSH Desktop 0.2.2-rc.5 / 0.2.2-rc.3 / 0.2.2-rc.2 / 0.2.2-rc.1 / 0.2.1-rc.1 / 0.2.1-rc.2 / 0.2.1-rc.3 / 0.2.1-rc.5 |
 | 0.2.2-rc.5 | pristine 全树比对：与 rc.3 相比 3783 文件逐字节相同，65 处差异中 58 处只是版本号；真实改动 4 处（dsh-base 搜索后端路由、llm-deepseek 翻译、tool-web 搜索、repeat-tool-reminder 新增 CONTENT_REFUSED）。88 条补丁 `patchDrift` 零漂移。**桌面壳 6 条（#45/#46/#82/#83/#84/#92）未在 rc.5 安装包上复测。** |
 | 0.2.2-rc.3 | 官方 rc.3 隔离副本 86 条补丁 74 applied / 零漂移，二次应用幂等；真实 Host Loader 预设注册通过。Windows rc.3 未复测补丁。 |

@@ -3,9 +3,13 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {ensureAppRuntimeLink,repairRuntimeForCli,findPnpmEntry,PNPM_ENTRY} from '../lib/runtime-layout.js';
+import {ensureAppRuntimeLink,repairRuntimeForCli,findPnpmEntry,PNPM_ENTRY,DIRECT_PNPM_ENTRY,setUserRuntimeRoots} from '../lib/runtime-layout.js';
 import {repairOfficialCliAfterUnpack} from '../lib/desktop.js';
 import {hostFs} from '../lib/extract-asar.js';
+
+// 判定默认会去读本机的 <DSH_HOME>/dsh-runtimes；测试必须与真实机器隔离，
+// 否则"缺运行时"这类断言在装有 rc.5 运行时的开发机上会假阴性。
+setUserRuntimeRoots(() => []);
 
 function fixture() {
  const root=fs.mkdtempSync(path.join(os.tmpdir(),'purge runtime 中文 ')),resources=path.join(root,'resources');
@@ -215,5 +219,74 @@ test('diagnostics distinguish a missing app directory from a missing runtime ent
   const missingRuntime = ensureAppRuntimeLink(f.resources);
   assert.equal(missingRuntime.reason, 'missing_runtime');
   assert.ok(missingRuntime.error.includes(path.join(f.resources, 'runtime')));
+  // 提示里必须带上用户数据目录：rc.5 把运行时搬到了那里，没有这个提示等于让人瞎猜。
+  assert.ok(missingRuntime.error.includes('dsh-runtimes'));
   assert.equal(fs.existsSync(f.link), false);
+});
+
+// 0.2.2-rc.5 把打包运行时从 resources/runtime 搬到 <DSH_HOME>/dsh-runtimes/<name>。
+// 只认安装目录会让每个 rc.5 用户在「应用」时都撞 missing_runtime 并保留原归档。
+function userRuntime(root) {
+  const dir = path.join(root, 'dsh-runtimes', 'dsh-primary-runtime');
+  const entry = path.join(dir, DIRECT_PNPM_ENTRY);
+  fs.mkdirSync(path.dirname(entry), {recursive: true});
+  fs.writeFileSync(entry, "console.log('user runtime fixture');");
+  return {dir, entry};
+}
+
+test('rc.5 user-data runtime is discovered when resources/runtime is empty', t => {
+  const f = fixture();
+  t.after(() => fs.rmSync(f.root, {recursive: true, force: true}));
+  fs.rmSync(path.join(f.resources, 'runtime'), {recursive: true, force: true});
+  fs.mkdirSync(path.join(f.resources, 'runtime'));
+  const {dir} = userRuntime(f.root);
+  setUserRuntimeRoots(() => [dir]);
+  t.after(() => setUserRuntimeRoots(() => []));
+
+  assert.equal(findPnpmEntry(path.join(f.resources, 'runtime')), null);
+  assert.equal(findPnpmEntry(dir), DIRECT_PNPM_ENTRY);
+
+  const result = ensureAppRuntimeLink(f.resources);
+  assert.equal(result.ok, true);
+  assert.equal(result.created, true);
+  assert.equal(result.source, 'user-runtime');
+  assert.equal(fs.readFileSync(path.join(f.link, DIRECT_PNPM_ENTRY), 'utf8'), "console.log('user runtime fixture');");
+  assert.equal(ensureAppRuntimeLink(f.resources).already, true);
+});
+
+test('an existing install-container link is migrated to the verified user runtime', t => {
+  const f = fixture();
+  t.after(() => fs.rmSync(f.root, {recursive: true, force: true}));
+  assert.equal(ensureAppRuntimeLink(f.resources).created, true);
+  assert.equal(fs.realpathSync(f.link), fs.realpathSync(path.join(f.resources, 'runtime')));
+
+  fs.rmSync(path.join(f.resources, 'runtime'), {recursive: true, force: true});
+  fs.mkdirSync(path.join(f.resources, 'runtime'));
+  const {dir} = userRuntime(f.root);
+  setUserRuntimeRoots(() => [dir]);
+  t.after(() => setUserRuntimeRoots(() => []));
+
+  const migrated = ensureAppRuntimeLink(f.resources);
+  assert.equal(migrated.ok, true);
+  assert.equal(migrated.migration, 'runtime_container');
+  assert.equal(migrated.source, 'user-runtime');
+  assert.ok(migrated.backup, 'the old link must be preserved as a backup');
+  assert.equal(fs.realpathSync(f.link), fs.realpathSync(dir));
+});
+
+test('a live link to an unrelated runtime root is never repointed', t => {
+  const f = fixture();
+  t.after(() => fs.rmSync(f.root, {recursive: true, force: true}));
+  const external = path.join(f.root, 'other-runtime');
+  fs.mkdirSync(path.dirname(path.join(external, PNPM_ENTRY)), {recursive: true});
+  fs.writeFileSync(path.join(external, PNPM_ENTRY), 'external');
+  fs.symlinkSync(external, f.link, process.platform === 'win32' ? 'junction' : 'dir');
+
+  const {dir} = userRuntime(f.root);
+  setUserRuntimeRoots(() => [dir]);
+  t.after(() => setUserRuntimeRoots(() => []));
+
+  const result = ensureAppRuntimeLink(f.resources);
+  assert.equal(result.reason, 'runtime_conflict');
+  assert.equal(fs.realpathSync(f.link), fs.realpathSync(external));
 });

@@ -9,14 +9,14 @@
 
 | 项 | 值 |
 | --- | --- |
-| 插件版本 | `dsh-purge-community` 1.7.21 |
+| 插件版本 | `dsh-purge-community` 1.7.22 |
 | 声明范围 | `dsh.compatibility.dsh = ">=0.2.1-rc.1 <0.3.0"` |
 | profile | `desktop`、`web` |
 | 逐发行状态字段 | `dsh.compatibility.dshReleases` |
 
 | 宿主发行 | 状态 | 依据 / 备注 |
 | --- | --- | --- |
-| 0.2.2-rc.5 | `compatible` | rc.3 → rc.5 pristine 全树比对 3783 文件逐字节相同、65 处差异中 58 处只是版本号；88 条补丁 `patchDrift` 零漂移。**桌面壳 6 条（#45/#46/#82/#83/#84/#92）未在 rc.5 安装包上复测。** |
+| 0.2.2-rc.5 | `compatible` | rc.3 → rc.5 pristine 全树比对 3783 文件逐字节相同、65 处差异中 58 处只是版本号；**已在真实 Windows rc.5 安装上应用：75/75 applied、`patchDrift` 零漂移**，桌面壳 6 条（#45/#46/#82/#83/#84/#92）同样命中。 |
 | 0.2.2-rc.4 | `unknown` | manifest 声明为 unknown；无证据 |
 | 0.2.2-rc.3 | `compatible` | 官方 rc.3 隔离副本 86 条补丁 74 applied / 零漂移，二次应用幂等；真实 Host Loader 预设注册通过。**Windows rc.3 未复测补丁。** |
 | 0.2.2-rc.2 | `compatible` | 同上批次验证 |
@@ -37,7 +37,8 @@
 - **0.1.5、0.2.0**：低于声明下限 `0.2.1-rc.1`，本仓库没有这两个宿主的适配记录，按**未验证（unknown）**处理。不要凭"更老的宿主应该更简单"推断可用。
 - **0.2.1 系列**：`tool-subagent` 不再接受 `toolFilter`——旧 deny 清单要先转成原生子预设与父工具 `agentPreset` 引用（机制与停止条件见 [troubleshooting §13](troubleshooting.md#t-preset)）。rc.4 未声明；rc.1 / rc.2 / rc.3 / rc.5 已声明 `compatible`。
 - **0.2.2-rc.1**：仍未完整适配。六项旧补丁 #14/#17/#60/#62/#67/#74 保持原定义、尚未修复；原生消息回合契约测试通过，但回调缺少 messages 的异常仍应暴露，不可吞掉错误或丢弃输入。测试范围与未确认事项见 [诊断记录](maintenance-022-diagnostics.md)。
-- **0.2.2-rc.5**：当前主验证目标。适配依据是源码级比对而非"装上去能跑"：与 rc.3 相比 3783 个文件逐字节相同，真实代码改动仅 4 处（`dsh-base` 的 web search 后端路由、`dsh-llm-deepseek` 翻译、`dsh-tool-web` 搜索、`dsh-repeat-tool-reminder` 新增 `CONTENT_REFUSED` 码），且都不在补丁锚点上。审批 / 沙箱 / 提权 / FS 围栏 / `system-prompt` / `agent-loop` / `tools` 逐字节未变，`#9 #10 #13 #14 #15 #16` 无需重锚。**桌面壳 6 条未复测**（目标是 Electron `resources/app/lib/main.js`，不在 npm 包树内）。
+- **0.2.2-rc.5**：当前主验证目标。适配依据是源码级比对而非"装上去能跑"：与 rc.3 相比 3783 个文件逐字节相同，真实代码改动仅 4 处（`dsh-base` 的 web search 后端路由、`dsh-llm-deepseek` 翻译、`dsh-tool-web` 搜索、`dsh-repeat-tool-reminder` 新增 `CONTENT_REFUSED` 码），且都不在补丁锚点上。审批 / 沙箱 / 提权 / FS 围栏 / `system-prompt` / `agent-loop` / `tools` 逐字节未变，`#9 #10 #13 #14 #15 #16` 无需重锚。桌面壳 6 条（#45/#46/#82/#83/#84/#92）已在真实 Windows rc.5 安装上复测命中。
+- **rc.5 的运行时搬家（1.7.22 修）**：官方安装器把打包运行时从 `resources\runtime\primary-runtime` 移到 `<DSH_HOME>\dsh-runtimes\dsh-primary-runtime`，并留下空的 `resources\runtime`。只认安装目录会让解包后的 `app/runtime` 链接必然失败（`missing_runtime`），「应用」中止并保留原归档——补丁写进了 `resources\app`，但 Electron 仍从 `app.asar` 加载，等于没生效。`findPnpmEntry` / `ensureAppRuntimeLink` 现在会回退扫 `<DSH_HOME>\dsh-runtimes\*`，旧的容器链接备份后改指（`migration: runtime_container`），其它位置的活链接仍报 `runtime_conflict` 保留不动。
 - **`#35` 的教训（0.2.2-rc.3 起）**：升级结果三条 `throw` 换成 `SandboxEscalationError` + 错误码、`cancelled` 分支加了 `throwIfAborted()`。旧锚点全不中，而该补丁当时声明了 `silentWhenMissing`，命中失败被报成 `skipped` 而非 `drifted`，等于长期静默失效。现在补了 rc.3/rc.5 锚点变体，并去掉 `silentWhenMissing` / `settleWhenAbsent`。**教训：`silentWhenMissing` 只该给"找不到本来就正确"的补丁，别给"加能力"的补丁。**
 - **0.2.2-rc.2 / rc.3**：rc.3 是上一版的主验证目标（见 [§1](#c-matrix)）。Windows 上的 rc.3 只做了部分验证——不要写成"Windows 全量通过"。
 - **0.2.2-alpha.2、rc.4**：`unknown`。`unknown` 不是"大概可以"，是"没有证据"。

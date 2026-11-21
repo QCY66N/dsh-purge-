@@ -8,7 +8,7 @@ A self-hosted add-on for DeepSeek Harness (known in the community as a 破甲 / 
 
 [![Release](https://img.shields.io/github/v/release/QCY66N/dsh-purge-?label=release)](https://github.com/QCY66N/dsh-purge-/releases)
 
-Current version 1.7.21 · targets **DSH Desktop 0.2.2-rc.5** (0.2.2-rc.3 / rc.2 / rc.1 / 0.2.1-rc.1 / rc.2 / rc.3 / rc.5 also pass)
+Current version 1.7.22 · targets **DSH Desktop 0.2.2-rc.5** (0.2.2-rc.3 / rc.2 / rc.1 / 0.2.1-rc.1 / rc.2 / rc.3 / rc.5 also pass)
 
 **Original project and author:** independently maintained from [dsh-purge by 小杨 / YuJunZhiXue](https://github.com/YuJunZhiXue/dsh-purge). The original repository is available again. Original attribution, copyright and the MIT license are retained; this community distribution is not an official upstream release.
 
@@ -68,7 +68,7 @@ Leave the npm registry at its working value. If pnpm requests `github.com/…/ya
 - CLI/Web users who already have `dsh` on PATH and use the `web` profile can use the official command below. Desktop users should not download another npx host to install into their existing desktop profile.
 
 ```sh
-dsh plugin --profile web add "https://github.com/QCY66N/dsh-purge-/releases/download/v1.7.21/dsh-purge-community-1.7.21.tgz"
+dsh plugin --profile web add "https://github.com/QCY66N/dsh-purge-/releases/download/v1.7.22/dsh-purge-community-1.7.22.tgz"
 ```
 
 Use the actual instance's profile and `DSH_HOME`. This project distributes via GitHub; do not substitute bare npm package names. The official command does not run our extra Release SHA256 check, migration snapshot or rollback wrapper.
@@ -89,7 +89,7 @@ A full page in the left sidebar: one line of state at the top, "Apply" as the pr
 
 ## Updates
 
-1.7.21 targets DSH **0.2.2-rc.5**: a pristine tree comparison against rc.3 shows 3783 byte-identical files with only four real code changes, and all 88 patches report zero drift under `patchDrift`. The release source now points at this repository. See the [release notes](https://github.com/QCY66N/dsh-purge-/releases/tag/v1.7.21).
+1.7.22 fixes the rc.5 desktop "Apply" deadlock: the official installer moved the bundled runtime to `~/.dsh/dsh-runtimes`, while the old code only looked under `resources/runtime`, so the post-unpack link always failed and patches were written but never active. It now falls back to the user directory, and `#35` no longer reports a guaranteed false drift on an applied host. See the [release notes](https://github.com/QCY66N/dsh-purge-/releases/tag/v1.7.22).
 
 Two separate preferences (check / install), default check-only every six hours. Installing never restarts the app — you decide when to reopen it.
 
@@ -97,7 +97,7 @@ Two separate preferences (check / install), default check-only every six hours. 
 
 On DSH 0.2.2-rc.5 the 88 patches report zero drift under `patchDrift`; the rc.3 → rc.5 pristine comparison is byte-identical for every approval, sandbox, escalation and filesystem-fence file, so the permission patches needed no re-anchoring. The six desktop-shell patches (#45/#46/#82/#83/#84/#92) target the Electron `main.js` and have **not** been re-verified on an rc.5 install.
 
-Plugin `dsh-purge-community` 1.7.21 · verified on DSH Desktop 0.2.2-rc.5 / 0.2.2-rc.3 / 0.2.2-rc.2 / 0.2.2-rc.1 / 0.2.1-rc.1 / rc.2 / rc.3 / rc.5 · Node ≥ 18.
+Plugin `dsh-purge-community` 1.7.22 · verified on DSH Desktop 0.2.2-rc.5 / 0.2.2-rc.3 / 0.2.2-rc.2 / 0.2.2-rc.1 / 0.2.1-rc.1 / rc.2 / rc.3 / rc.5 · Node ≥ 18.
 
 ## Troubleshooting
 
