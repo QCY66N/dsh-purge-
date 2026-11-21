@@ -26,7 +26,11 @@ const GATE_FINGERPRINTS = {
   30: "c844cddcc7933514",
   31: "f80165c28dc19a5e",
   34: "1ecd46f5b4067b0f",
-  35: "eab9ef59d3ca00b8",
+  // 0.2.2-rc.3 起宿主把三条 throw 换成 SandboxEscalationError + 错误码，并给 cancelled
+  // 分支加了 throwIfAborted()：旧锚点（throw new Error）全不中，而该补丁当时声明了
+  // silentWhenMissing，于是长期显示 skipped 而不是 drifted —— 升级拒绝豁免其实一直没落地。
+  // 现补了 rc.3/rc.5 的锚点变体，并去掉 silentWhenMissing/settleWhenAbsent 让漏打可见。
+  35: "6a778f55386b6d1a",
   36: "fd8e27dd7b1b21b3",
   59: "fc2fc00d258210b1",
   60: "9e13ac2da676e434",

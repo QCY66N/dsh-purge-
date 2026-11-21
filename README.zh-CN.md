@@ -11,7 +11,7 @@
 
 当前版本 **1.7.21** · 适配 **DSH Desktop 0.2.2-rc.5**（0.2.2-rc.3 / rc.2 / rc.1 / 0.2.1-rc.1 / rc.2 / rc.3 / rc.5 同样通过） · [English](docs/README.en.md)
 
-1.7.21 适配 DSH **0.2.2-rc.5**：rc.3 → rc.5 的 pristine 全树比对里 3783 个文件逐字节相同，真实代码改动只有 4 处，88 条补丁在 rc.5 上 `patchDrift` 零漂移；同时把发布源切到本仓库。[发行说明](https://github.com/QCY66N/dsh-purge-/releases/tag/v1.7.21)。
+1.7.21 适配 DSH **0.2.2-rc.5**：rc.3 → rc.5 的 pristine 全树比对里 3783 个文件逐字节相同，真实代码改动只有 4 处，88 条补丁在 rc.5 上 `patchDrift` 零漂移；并修掉自 rc.3 起静默失效的 `#35`（升级拒绝豁免）。发布源同时切到本仓库。[发行说明](https://github.com/QCY66N/dsh-purge-/releases/tag/v1.7.21)。
 
 **原项目与作者**：小杨 / YuJunZhiXue 是历史上游 dsh-purge 的作者署名。本仓库独立维护社区版，保留上游版权和 MIT 许可证。历史署名不代表对当前同名 GitHub 账号身份的核实。详见[署名记录](NOTICE.md)与[许可证](LICENSE)。
 

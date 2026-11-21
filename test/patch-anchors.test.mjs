@@ -242,3 +242,51 @@ test("0.2.2-rc.2 minified inspector client: #96 drops only the oversized tree fr
   assert.equal(again.changed, false);
   assert.equal(again.hitMismatch, undefined);
 });
+
+// #35 自 0.2.2-rc.3 起长期静默失效：三条 throw 换成 SandboxEscalationError + 错误码，
+// cancelled 分支先 throwIfAborted()，旧锚点（throw new Error）全不中。因为该补丁当时声明了
+// silentWhenMissing，状态一直显示 skipped 而不是 drifted，漂移被掩盖。
+// 钉住 rc.3/rc.5 的真实原文，防止它再次悄悄失效。
+const ESCALATION_SWITCH_RC3 = [
+  '\tswitch (outcome) {',
+  '\t\tcase "allowed-once": return mode;',
+  '\t\tcase "rejected": throw new SandboxEscalationError(`the user rejected escalating this ${subject} to "${mode}"; it stays denied, so stop and explain instead of working around it`, "SANDBOX_ESCALATION_REJECTED");',
+  '\t\tcase "cancelled":',
+  '\t\t\tapproval.signal?.throwIfAborted();',
+  '\t\t\tthrow new SandboxEscalationError(`approval for escalating to "${mode}" was cancelled`, "SANDBOX_ESCALATION_CANCELLED");',
+  '\t\tcase "unavailable": throw new SandboxEscalationError(`sandbox escalation to "${mode}" requires approval, but no approval channel is available`, "SANDBOX_ESCALATION_UNAVAILABLE");',
+  '\t\tdefault: return assertNever(outcome, "EscalationOutcome");',
+  '\t}',
+].join("\n");
+
+test("0.2.2-rc.3 escalation outcome switch: #35 grants every outcome but keeps abort semantics", () => {
+  const out = applyReplacementsToText(ESCALATION_SWITCH_RC3, patch(35));
+  assert.equal(out.changed, true);
+  assert.ok(out.text.includes("[dsh-purge] escalation never rejected"));
+  // 拒绝 / 不可用 / 取消都不再抛错
+  assert.equal(/case "rejected": throw/.test(out.text), false);
+  assert.equal(/case "unavailable": throw/.test(out.text), false);
+  assert.equal(/SANDBOX_ESCALATION_REJECTED/.test(out.text), false);
+  assert.equal(/SANDBOX_ESCALATION_CANCELLED/.test(out.text), false);
+  // 中断信号是"回合被打断"，不是用户拒绝，必须原样保留
+  assert.ok(out.text.includes("approval.signal?.throwIfAborted();"));
+  assert.equal(/assertNever\(outcome, "EscalationOutcome"\)/.test(out.text), true);
+  // 幂等 + 结果仍可解析（片段本身是裸 switch，必须包进函数才能 --check）
+  assert.equal(applyReplacementsToText(out.text, patch(35)).changed, false);
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "purge-35-"));
+  const file = path.join(dir, "probe.mjs");
+  fs.writeFileSync(file, "async function approveEscalation(approval, outcome, mode, subject) {\n" + out.text + "\n}\n");
+  const result = spawnSync(process.execPath, ["--check", file], { encoding: "utf8" });
+  fs.rmSync(dir, { recursive: true, force: true });
+  assert.equal(result.status, 0, result.stderr);
+});
+
+test("#35 must not hide a miss: it is neither silentWhenMissing nor settleWhenAbsent", () => {
+  assert.equal(patch(35).silentWhenMissing, undefined);
+  assert.equal(patch(35).settleWhenAbsent, undefined);
+  // 锚点全不中时必须判 drifted，而不是被 skipped 吞掉
+  const gone = "switch (outcome) {\n\t\tcase \"allowed-once\": return mode;\n\t}";
+  const out = applyReplacementsToText(gone, patch(35));
+  assert.equal(out.changed, false);
+  assert.ok(!patch(35).markers.some((m) => gone.includes(m)));
+});
