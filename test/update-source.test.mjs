@@ -3,7 +3,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { SOURCE_REPO, UPSTREAM_REPO, archiveZipUrl, archiveTarballUrl } from "../lib/update-net.js";
-import { REPOSITORY, UPSTREAM_REPOSITORY, LATEST_TARBALL_RE } from "../lib/community.js";
+import { REPOSITORY, UPSTREAM_REPOSITORY, LATEST_TARBALL_RE, releaseIdentityUrls } from "../lib/community.js";
 
 test("update sources point at this repository", () => {
   assert.equal(SOURCE_REPO, "QCY66N/dsh-purge-");
@@ -40,4 +40,19 @@ test("latest-channel recognition rejects look-alike hosts and paths", () => {
   ]) {
     assert.equal(LATEST_TARBALL_RE.test(url), false, `must not recognise ${url}`);
   }
+});
+
+// 换源不能把"从上游装过来"的路断掉：回滚事务、install-recovery、以及以旧版本为
+// baseline 的升级演练都要校验上游包，那些包的 repository.url 写的是上游。
+// 但白名单必须封闭——收紧到只剩本仓库会让 CI 的 rollback 演练直接报
+// "安装包身份与发行版本不一致"。
+test("release identity accepts this fork and the upstream it forked from, nothing else", () => {
+  const urls = releaseIdentityUrls();
+  for (const repo of [REPOSITORY, UPSTREAM_REPOSITORY]) {
+    assert.ok(urls.includes(`git+https://github.com/${repo}.git`));
+    assert.ok(urls.includes(`https://github.com/${repo}.git`));
+  }
+  assert.equal(urls.length, 4, "allowlist must stay closed: exactly two repos, two URL forms");
+  assert.equal(urls.includes("https://github.com/evil/dsh-purge-.git"), false);
+  assert.equal(urls.includes("https://github.com/QCY66N/dsh-purge-.git "), false, "no whitespace tolerance");
 });

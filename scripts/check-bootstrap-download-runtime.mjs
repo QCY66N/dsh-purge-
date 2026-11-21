@@ -6,7 +6,22 @@ import { bootstrapInstall } from './bootstrap-install.mjs';
 const home=fs.mkdtempSync(path.join(os.tmpdir(),'purge-download-acceptance-'));
 const profile=path.join(home,'profiles/desktop');fs.mkdirSync(profile,{recursive:true});
 fs.writeFileSync(path.join(profile,'package.json'),'{}');fs.writeFileSync(path.join(profile,'cordis.patch.yml'),'PRIVATE SETTINGS SENTINEL');
-const version=process.argv[2]||'1.6.38';
+
+// 显式给了版本就照做；没给就取本仓库最新正式发行。
+// 以前写死 1.6.38——那是上游的版本号，换源之后这个 tag 在本仓库不存在，首发必然 404。
+async function resolveTargetVersion(explicit) {
+  if (explicit) return explicit;
+  const { releasedVersions } = await import('../lib/community.js');
+  const list = await releasedVersions();
+  return list.length ? list[0].version : '';
+}
+const version=await resolveTargetVersion(process.argv[2]);
+if(!version) {
+  // 新 fork 的首次发行走不到这里能验收的地步：仓库还没有任何正式 release，
+  // 而这条验收要下载真实发行包。明确跳过并说明原因，不要伪装成通过。
+  console.log('SKIP: 本仓库还没有任何正式发行（含 tgz 与 SHA256SUMS），无法验收真实下载链路；首发创建后自然会跑。');
+  process.exit(0);
+}
 try {
   for(const fallback of [false,true]) {
     const logs=[];
