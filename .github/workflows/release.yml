@@ -75,6 +75,9 @@ jobs:
       - name: Real Windows Electron handoff lifecycle
         if: runner.os == 'Windows'
         shell: pwsh
+        env:
+          # 未认证的 GitHub API 在共享 runner 上很容易撞 429/403 额度；带 token 才稳定。
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           $runtime = Join-Path ([IO.Path]::GetTempPath()) 'purge-electron'
           npm install --prefix $runtime --no-package-lock --no-audit --no-fund electron@44.7.0
@@ -100,6 +103,8 @@ jobs:
       - name: Real macOS Electron diagnostics and manual-quit handoff
         if: runner.os == 'macOS'
         shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           runtime="$RUNNER_TEMP/purge-electron"

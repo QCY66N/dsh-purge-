@@ -9,11 +9,23 @@ fs.writeFileSync(path.join(profile,'package.json'),'{}');fs.writeFileSync(path.j
 
 // 显式给了版本就照做；没给就取本仓库最新正式发行。
 // 以前写死 1.6.38——那是上游的版本号，换源之后这个 tag 在本仓库不存在，首发必然 404。
+// 未认证的 GitHub API 在共享 runner 上容易撞额度：那种情况下明确 SKIP，不要伪装成通过，
+// 也不要把"查不到发行"当成"下载链路有问题"。
 async function resolveTargetVersion(explicit) {
   if (explicit) return explicit;
   const { releasedVersions } = await import('../lib/community.js');
-  const list = await releasedVersions();
-  return list.length ? list[0].version : '';
+  try {
+    const list = await releasedVersions();
+    return list.length ? list[0].version : '';
+  } catch (error) {
+    const message = String(error && error.message || '');
+    if (/额度耗尽|rate limit|HTTP (403|429)/i.test(message)) {
+      console.log('SKIP: GitHub API 额度受限，无法确认本仓库的正式发行；配置 GITHUB_TOKEN 后此验收才有意义。');
+      console.log('  ' + message.split('\n')[0]);
+      return '';
+    }
+    throw error;
+  }
 }
 const version=await resolveTargetVersion(process.argv[2]);
 if(!version) {
